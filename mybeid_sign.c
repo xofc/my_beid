@@ -12,7 +12,9 @@
 void usage(char *prog_name, char *str)
 	{
 	fprintf(stderr, "%s: %s\n", prog_name, str);
-	fprintf(stderr, "\tusage: '%s <name> -k <key> -a <algo> -d <hash> [-o <sigfile>]\n", prog_name);
+	fprintf(stderr, "\tusage: '%s -d <hash> [-s] [-a <algo>]\n", prog_name);
+	fprintf(stderr, "\t-s : use the non-repudiation key; default is authentication key\n");
+	fprintf(stderr, "\t<algo> = 0..6 (default is 6, SHA256)\n");
 	}
 void xdump(char *str, u_char *ucp, int len)
 	{
@@ -244,32 +246,31 @@ int main(int argc, char *argv[])
 	int	hash_len;
 	char 	*hash_str;
 	u_char	hash_buf[256];
-	char	*sig_name = "signature.sig";
 
 	key = 0x82;		/* default = Authentication key */
 	algo = (1 << 5);	/* default = 0x20 sha256 */
-	while ((opt = getopt(argc, argv, "sa:d:o:")) != -1)
+	while ((opt = getopt(argc, argv, "sa:d:")) != -1)
 		{
 		switch(opt)
 			{
 			case 's':	/* non-repudiation key to sign (default = authentication key) */
 				key = 0x83;
 				break;
+
 			case 'a':	/* algorithm 0..6 */
 				algo = optarg[0] - '0';
 				if (algo < 0 || algo > 6)
 					{
-					usage(argv[0], "Bad algorithm. should be 0..6 (default is 5)");
+					usage(argv[0], "Bad algorithm. should be 0..6 (default is 5=SHA256)");
 					exit(-1);
 					}
 				algo = (1 << algo);
 				break;
+
 			case 'd':	/* hash to sign */
 				hash_str = optarg;
 				break;
-			case 'o':	/* output signature file */
-				sig_name = optarg;
-				break;
+
 			default:
 				usage(argv[0], "Bad option\n");
 				exit(-1);
